@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kindle Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        .message { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .user { background-color: #e0f7fa; text-align: right; }
+        .bot { background-color: #f0f0f0; }
+        input { width: 100%; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<h2>Chat with AI</h2>
+<div id="chat-container"></div>
+<input type="text" id="prompt-input" placeholder="Ask something" onkeydown="handleKey(event)">
+
+<script>
+    const chatContainer = document.getElementById('chat-container');
+    const promptInput = document.getElementById('prompt-input');
+
+    function displayMessage(text, isUser) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+        messageDiv.textContent = text;
+        chatContainer.appendChild(messageDiv);
+    }
+
+    async function fetchChatResponse(prompt) {
+        displayMessage("Thinking...", false);
+
+        try {
+            const response = await fetch("https://your-project.vercel.app/api/chatgpt", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const botResponse = data.reply;
+                chatContainer.lastChild.textContent = botResponse;
+            } else {
+                chatContainer.lastChild.textContent = "Error: Unable to fetch response.";
+            }
+        } catch (error) {
+            chatContainer.lastChild.textContent = "Error: Could not reach server.";
+        }
+    }
+
+    function handleKey(event) {
+        if (event.key === 'Enter') {
+            const prompt = promptInput.value.trim();
+            if (prompt) {
+                displayMessage(prompt, true);
+                fetchChatResponse(prompt);
+                promptInput.value = '';
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
